@@ -45,6 +45,10 @@ class Tlsh:
         """Reset the internal buffer used for TLSH computation."""
         self._tlsh_obj.reset()
 
+    def fromTlshStr(self, tlsh_str: str) -> None:
+        """Load a TLSH hash from a string"""
+        self._tlsh_obj.fromTlshStr(tlsh_str)
+
 
 version: str = _Tlsh().version
 
@@ -63,3 +67,13 @@ def digest(buffer: bytes) -> bytes:
     t = Tlsh(buffer)
     t.final()
     return t.digest()
+
+
+def diff(h1: str, h2: str) -> int:
+    """Helper function to quickly calculate the TLSH score between two TLSH
+    hashes."""
+    t1 = Tlsh()
+    t1.fromTlshStr(h1)
+    t2 = Tlsh()
+    t2.fromTlshStr(h2)
+    return t1.diff(t2)
