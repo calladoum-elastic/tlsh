@@ -92,7 +92,7 @@ jobs:
         ctest --parallel ${{ env.NB_CPU }} --progress --build-config ${{ matrix.variants.config }} -T test --test-dir ./build
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: libtlsh-${{ matrix.variants.os }}.${{ matrix.variants.config }}-${{ matrix.variants.arch }}-${{ matrix.static }}
         path: |
@@ -124,7 +124,7 @@ jobs:
 
     - name: Install Python pre-requisites
       run: |
-        python -m pip install --user --upgrade -r python/requirements.txt
+        python -m pip install --user --upgrade .
 
     - name: Environment Setup (Windows)
       if: matrix.variant.os == 'windows-latest'
@@ -156,7 +156,7 @@ jobs:
         python -m pip wheel . -w ./wheel
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tlsh-py-py${{ matrix.python-version }}-${{ matrix.variant.os }}.${{ matrix.variant.config }}-${{ matrix.variant.arch }}
         path: |

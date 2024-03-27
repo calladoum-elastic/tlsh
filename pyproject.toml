@@ -16,17 +16,15 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Natural Language :: English",
 ]
-dependencies = ["black", "setuptools", "wheel", "nanobind"]
+
+dependencies = ["setuptools", "wheel", "nanobind"]
 
 [project.optional-dependencies]
-dev = [
-    "black",
-    "benchmark",
-    "coverage",
-    "pytest",
-    "pytest-cov",
-    "pytest-benchmark",
-]
+dev = ["black"]
+
+tests = ["pytest", "pytest-benchmark"]
+
+all = ["dev", "tests"]
 
 [project.urls]
 Homepage = "https://github.com/calladoum-elastic/tlsh"
