@@ -2705,14 +2705,14 @@ from_hex(std::vector<u8> const &psrc, std::vector<u8> &pdest)
 }
 
 
-void
-from_hex(const u8 *psrc, size_t srclen, u8 *pdest, size_t dstlen)
-{
-    std::vector<u8> vecsrc;
-    std::vector<u8> vecdst;
-    vecsrc.assign(psrc, psrc+srclen);
-    vecdst.assign(pdest, pdest+dstlen);
+// void
+// from_hex(const u8 *psrc, size_t srclen, u8 *pdest, size_t dstlen)
+// {
+//     std::vector<u8> vecsrc;
+//     std::vector<u8> vecdst;
+//     vecsrc.assign(psrc, psrc+srclen);
+//     vecdst.assign(pdest, pdest+dstlen);
    
-    from_hex(vecsrc, vecdst);
-    std::copy(vecdst.begin(), vecdst.end(), pdest);
-}
+//     from_hex(vecsrc, vecdst);
+//     std::copy(vecdst.begin(), vecdst.end(), pdest);
+// }
