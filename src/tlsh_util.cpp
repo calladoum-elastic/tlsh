@@ -2688,18 +2688,20 @@ from_hex(std::vector<u8> const &psrc, std::vector<u8> &pdest)
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // TUVWXYZ[/]^_` (gap)
         10, 11, 12, 13, 14, 15                 // abcdef
     };
-
-    if ((psrc.size() / 2) & 1)
+    
+    if (psrc.size() % 2 != 0){ 
         return;
+    }
 
     pdest.resize(psrc.size() / 2);
-
+    
     for (int i = 0, j = 0; i < psrc.size() - 1; i += 2, j++)
     {
-        const u8 hi = psrc[i] << 4;
-        const u8 lo = psrc[i + 1];
-        pdest[i]    = hi | lo;
+        const u8 hi = DecLookup[psrc[i]] << 4; 
+        const u8 lo = DecLookup[psrc[i + 1]]; 
+        pdest[j] = hi | lo; 
     }
+
 }
 
 
@@ -2710,6 +2712,7 @@ from_hex(const u8 *psrc, size_t srclen, u8 *pdest, size_t dstlen)
     std::vector<u8> vecdst;
     vecsrc.assign(psrc, psrc+srclen);
     vecdst.assign(pdest, pdest+dstlen);
-
+   
     from_hex(vecsrc, vecdst);
+    std::copy(vecdst.begin(), vecdst.end(), pdest);
 }
