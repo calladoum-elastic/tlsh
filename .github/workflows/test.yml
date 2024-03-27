@@ -23,14 +23,9 @@ jobs:
       with:
         python-version: ${{ matrix.py }}
 
-    - name: Install Python Requirements
-      run: |
-        python -m pip install --user --upgrade -r python/requirements.txt
-        python -m pip install --user --upgrade -r python/tests/requirements.txt
-
     - name: Install Package
       run: |
-        python -m pip install --user --upgrade .
+        python -m pip install --user --upgrade .[tests]
 
     - name: Run Tests
       run: |
