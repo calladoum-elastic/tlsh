@@ -1203,9 +1203,7 @@ TlshImpl::fromTlshStr(std::string const &str)
     }
 
     std::vector<u8> buf;
-    // get size for str
-    int strSize = str.size();
-    buf.assign(&str[start], &str[str.size()]);
+    buf.assign(&str[start], &str[str.size() - start]);
     return this->fromTlshBytes(buf);
 }
 
