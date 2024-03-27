@@ -2646,7 +2646,7 @@ swap_byte(const unsigned char in)
 void
 to_hex(u8 *psrc, int len, u8 *pdest)
 {
-    static unsigned char HexLookup[513] = {
+    const static u8 HexLookup[513] = {
         "000102030405060708090A0B0C0D0E0F"
         "101112131415161718191A1B1C1D1E1F"
         "202122232425262728292A2B2C2D2E2F"
@@ -2672,13 +2672,13 @@ to_hex(u8 *psrc, int len, u8 *pdest)
         pwDest++;
         psrc++;
     }
-    *((unsigned char *)pwDest) = 0; // terminate the string
+    // *((unsigned char *)pwDest) = 0; // terminate the string // off-by-one
 }
 
 void
 from_hex(std::vector<u8> const &psrc, std::vector<u8> &pdest)
 {
-    static std::array<u8, 103> DecLookup = {
+    const static std::array<u8, 103> DecLookup = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // gap before first hex digit
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,       // 0123456789
@@ -2688,20 +2688,21 @@ from_hex(std::vector<u8> const &psrc, std::vector<u8> &pdest)
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // TUVWXYZ[/]^_` (gap)
         10, 11, 12, 13, 14, 15                 // abcdef
     };
-    
-    if (psrc.size() % 2 != 0){ 
+
+    if (psrc.size() & 1)
+    {
+        pdest.clear();
         return;
     }
 
     pdest.resize(psrc.size() / 2);
-    
-    for (int i = 0, j = 0; i < psrc.size() - 1; i += 2, j++)
-    {
-        const u8 hi = DecLookup[psrc[i]] << 4; 
-        const u8 lo = DecLookup[psrc[i + 1]]; 
-        pdest[j] = hi | lo; 
-    }
 
+    for (size_t i = 0, j = 0; i < psrc.size(); i += 2, j++)
+    {
+        const u8 hi = DecLookup[psrc[i]] << 4;
+        const u8 lo = DecLookup[psrc[i + 1]];
+        pdest[j]    = hi | lo;
+    }
 }
 
 
@@ -2712,7 +2713,7 @@ from_hex(std::vector<u8> const &psrc, std::vector<u8> &pdest)
 //     std::vector<u8> vecdst;
 //     vecsrc.assign(psrc, psrc+srclen);
 //     vecdst.assign(pdest, pdest+dstlen);
-   
+
 //     from_hex(vecsrc, vecdst);
 //     std::copy(vecdst.begin(), vecdst.end(), pdest);
 // }

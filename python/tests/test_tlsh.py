@@ -41,14 +41,16 @@ def test_basic_test():
     assert isinstance(val2, bytes)
     assert val2.startswith(b"T1")
 
-    for _ in range(100):
+    for _ in range(2000):
         a = tlsh.Tlsh()
         a.update(buf)
         a.final()
+        assert a.valid
 
         b = tlsh.Tlsh()
         b.update(buf)
         b.final()
+        assert b.valid
 
         assert bool(a)
         assert isinstance(a.hexdigest(), str)
@@ -73,9 +75,11 @@ def test_load_string():
     input_b = "T1B0524126A7A1CF3EDD3893B804A74631A2B67898A37522372755B7342F933544AA34C9"
     a = tlsh.Tlsh()
     a.load(input_a)
+    assert a.valid
     assert a.hexdigest() == input_a
     b = tlsh.Tlsh()
     b.load(input_b)
+    assert b.valid
     assert b.hexdigest(ver=1) == input_b
 
 
@@ -182,3 +186,24 @@ def test_perf_tlsh_load(benchmark):
         "5F52FA2AFBA1C9BDDCBCE3F484570170B2B6786153B6623B269467341F933445A538E8",
     )
     assert isinstance(result, int)
+
+
+DIFF_TESTCASES = [
+    # (hash1, hash2, expected_score)
+    [
+        "T17E16D300ACF0A8D1D44DB37A95DC19249EE71EC38D30695EBBDCEC9D1F216884DE269B",
+        "T17E16D300ACF0A8D1D44DB37A95DC19249EE71EC38D30695EBBDCEC9D1F216884DE26AA",
+        2,
+    ]
+]
+
+
+def test_diff():
+    for tc in DIFF_TESTCASES:
+        t1 = tlsh.Tlsh()
+        assert t1.load(tc[0])
+        assert t1.valid
+        t2 = tlsh.Tlsh()
+        assert t2.load(tc[1])
+        assert t2.valid
+        assert t1.diff(t2, False) == tc[2]

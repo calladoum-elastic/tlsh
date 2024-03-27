@@ -16,6 +16,10 @@ class Tlsh:
             self.update(buffer)
 
     def __bool__(self) -> bool:
+        return self.valid
+
+    @property
+    def valid(self) -> bool:
         return self._tlsh_obj.isValid()
 
     def update(self, buffer: Union[bytes, bytearray]) -> None:
