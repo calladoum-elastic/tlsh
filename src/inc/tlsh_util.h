@@ -74,7 +74,7 @@ unsigned char
 swap_byte(const unsigned char in);
 
 #ifdef __cplusplus
-bool
+void
 from_hex(std::vector<u8> const &psrc, std::vector<u8> &pdest);
 #endif // __cplusplus
 
