@@ -64,8 +64,19 @@ def test_validate_diff():
     b_s = "4141414141414141414141414141414141414141414141414141414141414141414142"
     b_b = b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB"
     assert tlsh.diff(a_s, b_s) == tlsh.diff(a_b, b_b)
-    assert tlsh.diff(a_s, b_s) == tlsh.diff(a_s, b_b)
+    assert tlsh.diff(a_s, b_s) == tlsh.diff(a_b, b_s)
     assert tlsh.diff(a_b, b_s) == tlsh.diff(a_s, b_b)
+
+
+def test_load_string():
+    input_a = "B0524126A7A1CF3EDD3893B804A74631A2B67898A37522372755B7342F933544AA34C9"
+    input_b = "T1B0524126A7A1CF3EDD3893B804A74631A2B67898A37522372755B7342F933544AA34C9"
+    a = tlsh.Tlsh()
+    a.load(input_a)
+    assert a.hexdigest() == input_a
+    b = tlsh.Tlsh()
+    b.load(input_b)
+    assert b.hexdigest(ver=1) == input_b
 
 
 def test_batch_test_base():

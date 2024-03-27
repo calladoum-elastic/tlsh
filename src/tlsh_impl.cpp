@@ -1204,7 +1204,11 @@ TlshImpl::fromTlshStr(std::string const &str)
 
     std::vector<u8> buf;
     buf.assign(&str[start], &str[str.size() - start]);
-    return this->fromTlshBytes(buf);
+
+    std::vector<u8> result(sizeof(buf));
+    from_hex(buf, result);
+
+    return this->fromTlshBytes(result);
 }
 
 int
@@ -1212,9 +1216,7 @@ TlshImpl::fromTlshBytes(std::vector<u8> const &buf)
 {
     this->reset();
 
-    lsh_bin_struct tmp{};
-    from_hex(buf.data(), INTERNAL_TLSH_STRING_LEN, (unsigned char *)&tmp, sizeof(tmp));
-
+    lsh_bin_struct tmp = (lsh_bin_struct &)buf[0];
     // Reconstruct checksum, Qrations & lvalue
     for (int k = 0; k < TLSH_CHECKSUM_LEN; k++)
     {
