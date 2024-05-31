@@ -24,7 +24,7 @@ jobs:
           - {os: windows-2022,   arch: win32,    config: RelWithDebInfo}
           - {os: windows-2022,   arch: arm64,    config: RelWithDebInfo}
           - {os: windows-2022,   arch: arm,      config: RelWithDebInfo}
-          - {os: ubuntu-22.04,   arch: x64,     config: RelWithDebInfo}
+          - {os: ubuntu-22.04,   arch: x64,      config: RelWithDebInfo}
           - {os: macos-13,       arch: x64,      config: Release}
 
     runs-on: ${{ matrix.variants.os }}

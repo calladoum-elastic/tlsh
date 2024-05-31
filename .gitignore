@@ -9,3 +9,4 @@ build/
 .vscode/
 src/inc/tlsh_version.h
 Testing/
+tests/datasets/large
