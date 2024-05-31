@@ -44,7 +44,7 @@ const std::filesystem::path SAMPLE_MEDIUM = LARGE_DATASET_ROOT / "ntoskrnl.exe";
 const std::filesystem::path SAMPLE_LARGE  = LARGE_DATASET_ROOT / "msedge.dll";
 
 // Use
-TEST_CASE("Hash Perf", "[" NS "]")
+TEST_CASE("Hash Perf - reuse", "[" NS "]")
 {
     SECTION("Sanity")
     {
@@ -69,9 +69,9 @@ TEST_CASE("Hash Perf", "[" NS "]")
             REQUIRE_FALSE(t.isValid());
             t.update(inhex);
             t.final();
+            REQUIRE(t.isValid());
+            CHECK(t.getHashString() == res);
         };
-        REQUIRE(t.isValid());
-        CHECK(t.getHashString() == res);
     }
 
     SECTION("TLSH small buffer hash (100KB)")
@@ -91,11 +91,11 @@ TEST_CASE("Hash Perf", "[" NS "]")
             REQUIRE_FALSE(t.isValid());
             t.update(in);
             t.final();
+            REQUIRE(t.isValid());
         };
-        REQUIRE(t.isValid());
     }
 
-    SECTION("TLSH large buffer hash (10MB)")
+    SECTION("TLSH medium buffer hash (10MB)")
     {
         const auto sz = usize(12068320);
         const auto fd = UniqueHandle{::fopen(SAMPLE_MEDIUM.c_str(), "r")};
@@ -106,7 +106,7 @@ TEST_CASE("Hash Perf", "[" NS "]")
         const auto cnt = ::fread(in.data(), sizeof(u8), sz, fd.get());
         REQUIRE(cnt == sz);
 
-        BENCHMARK("TLSH (large buffer)")
+        BENCHMARK("TLSH (medium buffer)")
         {
             t.reset();
             REQUIRE_FALSE(t.isValid());
@@ -137,6 +137,100 @@ TEST_CASE("Hash Perf", "[" NS "]")
         REQUIRE(t.isValid());
     }
 }
+
+TEST_CASE("Hash Perf - no reuse", "[" NS "]")
+{
+    SECTION("Sanity")
+    {
+        BENCHMARK("Check")
+        {
+            ::sleep(1);
+        };
+    }
+
+    SECTION("TLSH tiny buffer hash (128B)")
+    {
+        let instr =
+            "0684076d82f90066d54f1ccaa555f093a7627286555b0e5cc2e36da3ab41732e79636276530a861db7732eeb420bc2261af2a956f9bb2cf20876ca8819b4a43e"sv;
+        let res = "8EA0022016221F9C51EE2F20BDAE164C82075B9DD563196665C4652425557542459C81"sv;
+
+        std::vector<u8> inhex, outhex;
+        from_hex(std::vector<u8>(instr.cbegin(), instr.cend()), inhex);
+
+        BENCHMARK("TLSH (tiny buffer)")
+        {
+            auto t = Tlsh();
+            REQUIRE_FALSE(t.isValid());
+            t.update(inhex);
+            t.final();
+            REQUIRE(t.isValid());
+            CHECK(t.getHashString() == res);
+        };
+    }
+
+    SECTION("TLSH small buffer hash (100KB)")
+    {
+        const auto sz = usize(158440);
+        const auto fd = UniqueHandle{::fopen(SAMPLE_SMALL.c_str(), "r")};
+        REQUIRE(fd != nullptr);
+
+        std::vector<u8> in(sz);
+        const auto cnt = ::fread(in.data(), sizeof(u8), sz, fd.get());
+        REQUIRE(cnt == sz);
+
+        BENCHMARK("TLSH (small buffer)")
+        {
+            auto t = Tlsh();
+            REQUIRE_FALSE(t.isValid());
+            t.update(in);
+            t.final();
+            REQUIRE(t.isValid());
+        };
+    }
+
+    SECTION("TLSH medium buffer hash (10MB)")
+    {
+        const auto sz = usize(12068320);
+        const auto fd = UniqueHandle{::fopen(SAMPLE_MEDIUM.c_str(), "r")};
+        REQUIRE(fd != nullptr);
+
+
+        std::vector<u8> in(sz);
+        const auto cnt = ::fread(in.data(), sizeof(u8), sz, fd.get());
+        REQUIRE(cnt == sz);
+
+        BENCHMARK("TLSH (medium buffer)")
+        {
+            auto t = Tlsh();
+            REQUIRE_FALSE(t.isValid());
+            t.update(in);
+            t.final();
+            REQUIRE(t.isValid());
+        };
+    }
+
+    SECTION("TLSH large buffer hash (100MB)")
+    {
+        const auto sz = usize(269893568);
+        const auto fd = UniqueHandle{::fopen(SAMPLE_LARGE.c_str(), "r")};
+        REQUIRE(fd != nullptr);
+
+
+        std::vector<u8> in(sz);
+        const auto cnt = ::fread(in.data(), sizeof(u8), sz, fd.get());
+        REQUIRE(cnt == sz);
+
+        BENCHMARK("TLSH (large buffer)")
+        {
+            auto t = Tlsh();
+            REQUIRE_FALSE(t.isValid());
+            t.update(in);
+            t.final();
+            REQUIRE(t.isValid());
+        };
+    }
+}
+
 
 TEST_CASE("Helpers", "[" NS "]")
 {
