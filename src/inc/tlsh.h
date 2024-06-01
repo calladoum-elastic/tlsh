@@ -155,7 +155,6 @@ public:
 
 private:
     std::unique_ptr<TlshImpl> m_Implementation;
-    // TlshImpl m_Implementation{};
 };
 
 #ifdef TLSH_DISTANCE_PARAMETERS
