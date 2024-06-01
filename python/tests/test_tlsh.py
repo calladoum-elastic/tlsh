@@ -89,6 +89,7 @@ def test_batch_test_base():
         for x in (TEST_DATA_PATH / "base.txt").open().readlines()
     ]
 
+    # full read
     for fname, expected_value in expected_values:
         buf = (TEST_DATA_PATH / fname).open("rb").read()
         tlsh_hex = tlsh.hexdigest(buf).upper()
@@ -96,9 +97,33 @@ def test_batch_test_base():
         assert (
             tlsh_hex == expected_value.upper()
         ), f"Mismatch on {fname}: expected={expected_value.upper()}  got={tlsh_hex}"
-
         expected_value_raw = bytes.fromhex(expected_value)
-        assert tlsh_raw == expected_value_raw, f"Mismatch on {fname}: got={tlsh_raw} expected={expected_value_raw}"
+        assert (
+            tlsh_raw == expected_value_raw
+        ), f"Mismatch on {fname}: got={tlsh_raw} expected={expected_value_raw}"
+
+    # block read
+    for fname, expected_value in expected_values:
+        bksz = 512
+        t = tlsh.Tlsh()
+        assert not t.valid
+        with (TEST_DATA_PATH / fname).open("rb") as fd:
+            while True:
+                buf = fd.read(bksz)
+                if not buf:
+                    break
+                t.update(buf)
+            t.final()
+            assert t.valid
+        tlsh_hex = t.hexdigest(0).upper()
+        tlsh_raw = t.digest(0)
+        assert (
+            tlsh_hex == expected_value.upper()
+        ), f"Mismatch on {fname}: expected={expected_value.upper()}  got={tlsh_hex}"
+        expected_value_raw = bytes.fromhex(expected_value)
+        assert (
+            tlsh_raw == expected_value_raw
+        ), f"Mismatch on {fname}: got={tlsh_raw} expected={expected_value_raw}"
 
 
 def test_batch_test_extended_file_level():
