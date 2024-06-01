@@ -354,26 +354,30 @@ TEST_CASE("Batch", "[" NS "]")
 
         for (auto const &[fname, expected_hash_str] : filenames)
         {
-            if (fname.empty())
-                continue;
-
             auto const fpath = BASE_DATASET_ROOT / fname;
             REQUIRE(std::filesystem::exists(fpath));
 
-            const auto fd = UniqueHandle{::fopen(fpath.c_str(), "r")};
+            const auto fd = UniqueHandle{::fopen(fpath.c_str(), "rb")};
             REQUIRE(fd != nullptr);
+
+            std::vector<u8> expected_hash(TLSH_STRING_LEN / 2);
+            from_hex(std::vector<u8>(expected_hash_str.cbegin(), expected_hash_str.cend()),
+                expected_hash);
 
             const usize blocksz = 512;
             auto t              = Tlsh();
             REQUIRE_FALSE(t.isValid());
+            t.reset();
 
-            while (true)
+            while (!::feof(fd.get()))
             {
+                REQUIRE_FALSE(::ferror(fd.get()));
                 std::vector<u8> in(blocksz);
                 const auto cnt = ::fread(in.data(), sizeof(u8), blocksz, fd.get());
                 if (cnt == 0)
                     break;
-
+                if (cnt < blocksz)
+                    in.resize(cnt);
                 t.update(in);
             }
 
@@ -381,7 +385,8 @@ TEST_CASE("Batch", "[" NS "]")
             INFO("file is " << fpath.c_str());
             REQUIRE(t.isValid());
 
-            CHECK(t.getHashString() == expected_hash_str);
+            CHECK(t.getHashString(0) == expected_hash_str);
+            CHECK(t.getHashBytes() == expected_hash);
         }
     }
 }
