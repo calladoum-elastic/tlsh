@@ -157,7 +157,7 @@ Tlsh::getHashString(u8 showvers) const
 void
 Tlsh::reset()
 {
-    m_Implementation.reset();
+    m_Implementation->reset();
 }
 
 
