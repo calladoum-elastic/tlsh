@@ -5,6 +5,7 @@ list(APPEND TEST_SOURCE_FILES
 
     # Test cases
     ${TEST_DIR}/test_basic.cpp
+    ${TEST_DIR}/test_batch.cpp
 
     # Performance tests
     ${TEST_DIR}/perf_basic.cpp

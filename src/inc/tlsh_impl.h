@@ -59,7 +59,7 @@ public:
     int
     compare(const TlshImpl &other) const;
     int
-    totalDiff(TlshImpl const &other, bool len_diff = true) const;
+    totalDiff(std::unique_ptr<TlshImpl> const &other, bool len_diff) const;
     int
     Lvalue();
     int

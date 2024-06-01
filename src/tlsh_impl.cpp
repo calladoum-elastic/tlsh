@@ -1192,13 +1192,13 @@ TlshImpl::HistogramCount(int bucket)
 }
 
 int
-TlshImpl::totalDiff(TlshImpl const &other, bool len_diff) const
+TlshImpl::totalDiff(std::unique_ptr<TlshImpl> const &other, bool len_diff) const
 {
     int diff = 0;
 
     if (len_diff)
     {
-        int ldiff = mod_diff(this->lsh_bin.Lvalue, other.lsh_bin.Lvalue, RANGE_LVALUE);
+        int ldiff = mod_diff(this->lsh_bin.Lvalue, other->lsh_bin.Lvalue, RANGE_LVALUE);
         if (ldiff == 0)
             diff = 0;
         else if (ldiff == 1)
@@ -1207,13 +1207,13 @@ TlshImpl::totalDiff(TlshImpl const &other, bool len_diff) const
             diff += ldiff * length_mult;
     }
 
-    int q1diff = mod_diff(this->lsh_bin.Q.QR.Q1ratio, other.lsh_bin.Q.QR.Q1ratio, RANGE_QRATIO);
+    int q1diff = mod_diff(this->lsh_bin.Q.QR.Q1ratio, other->lsh_bin.Q.QR.Q1ratio, RANGE_QRATIO);
     if (q1diff <= 1)
         diff += q1diff;
     else
         diff += (q1diff - 1) * qratio_mult;
 
-    int q2diff = mod_diff(this->lsh_bin.Q.QR.Q2ratio, other.lsh_bin.Q.QR.Q2ratio, RANGE_QRATIO);
+    int q2diff = mod_diff(this->lsh_bin.Q.QR.Q2ratio, other->lsh_bin.Q.QR.Q2ratio, RANGE_QRATIO);
     if (q2diff <= 1)
         diff += q2diff;
     else
@@ -1221,14 +1221,14 @@ TlshImpl::totalDiff(TlshImpl const &other, bool len_diff) const
 
     for (int k = 0; k < TLSH_CHECKSUM_LEN; k++)
     {
-        if (this->lsh_bin.checksum[k] != other.lsh_bin.checksum[k])
+        if (this->lsh_bin.checksum[k] != other->lsh_bin.checksum[k])
         {
             diff++;
             break;
         }
     }
 
-    diff += h_distance(CODE_SIZE, this->lsh_bin.tmp_code, other.lsh_bin.tmp_code);
+    diff += h_distance(CODE_SIZE, this->lsh_bin.tmp_code, other->lsh_bin.tmp_code);
 
     return diff;
 }

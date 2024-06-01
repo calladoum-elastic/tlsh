@@ -147,15 +147,15 @@ public:
     static inline std::array<u8, 5> version_info = {TLSH_VERSION_MAJOR, TLSH_VERSION_MINOR,
         TLSH_VERSION_PATCH, TLSH_CHECKSUM, SLIDING_WND_SIZE};
 
-    TlshImpl const &
+    std::unique_ptr<TlshImpl> const &
     impl() const
     {
         return m_Implementation;
     }
 
 private:
-    // std::unique_ptr<TlshImpl> m_Implementation;
-    TlshImpl m_Implementation{};
+    std::unique_ptr<TlshImpl> m_Implementation;
+    // TlshImpl m_Implementation{};
 };
 
 #ifdef TLSH_DISTANCE_PARAMETERS
