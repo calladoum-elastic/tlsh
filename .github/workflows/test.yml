@@ -13,9 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         variants:
-          - {os: "windows-2022",  config: Debug}
-          - {os: "ubuntu-22.04",  config: Debug}
-          - {os: "macos-13",      config: Debug}
+          - {os: windows-2022,  config: Debug}
+          - {os: ubuntu-2204",  config: Debug}
+          - {os: macos-13,      config: Debug}
     runs-on: ${{ matrix.variants.os }}
     steps:
     - uses: actions/checkout@v4
