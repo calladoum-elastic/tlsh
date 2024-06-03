@@ -29,12 +29,11 @@ using i8 = char;
 using u32 = uint32_t;
 using i32 = int32_t;
 
-#if defined _WINDOWS
+#if defined _WIN32
 using usize = size_t;
-#elif defined _LINUX
+#elif defined __linux__
 using usize = std::size_t;
-#elif defined _MACOS
+#elif defined __APPLE__
 #include <stddef.h>
 using usize = size_t;
 #endif
-
