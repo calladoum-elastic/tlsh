@@ -32,20 +32,37 @@ else()
 #
 # Build with ASAN if available AND debug build
 #
-if(BUILD_WITH_ASAN)
-    target_compile_definitions(tlsh
-    PUBLIC
-        $<$<CONFIG:Debug>:_DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION >
-    )
-    target_compile_options(tlsh
-    PUBLIC
-        $<$<CONFIG:Debug>:-fsanitize=address>
-    )
-    target_link_libraries(tlsh
-    PUBLIC
-        $<$<CONFIG:Debug>:-fsanitize=address>
-    )
-endif(BUILD_WITH_ASAN)
+if(TLSH_BUILD_WITH_ASAN)
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("-fsanitize=address" HAS_ASAN_AVAILABLE)
+    if(HAS_ASAN_AVAILABLE)
+        if(WIN32)
+            target_compile_definitions(tlsh
+            PUBLIC
+                $<$<CONFIG:Debug>:_DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION >
+            )
+            target_compile_options(tlsh
+            PUBLIC
+                $<$<STREQUAL:${CMAKE_GENERATOR_PLATFORM},x64>:$<$<CONFIG:Debug>:/fsanitize=address>>
+                $<$<STREQUAL:${CMAKE_GENERATOR_PLATFORM},win32>:$<$<CONFIG:Debug>:/fsanitize=address>>
+            )
+            target_link_options(tlsh
+            PUBLIC
+                $<$<STREQUAL:${CMAKE_GENERATOR_PLATFORM},win32>:$<$<CONFIG:Debug>:/InferAsanLibs>>
+                $<$<STREQUAL:${CMAKE_GENERATOR_PLATFORM},x64>:$<$<CONFIG:Debug>:/InferAsanLibs>>
+            )
+        else()
+            target_compile_options(tlsh
+            PUBLIC
+                $<$<CONFIG:Debug>:-fsanitize=address>
+            )
+            target_link_libraries(tlsh
+            PUBLIC
+                $<$<CONFIG:Debug>:-fsanitize=address>
+            )
+        endif(WIN32)
+    endif(HAS_ASAN_AVAILABLE)
+endif(TLSH_BUILD_WITH_ASAN)
 
 install(TARGETS tlsh DESTINATION lib)
 
