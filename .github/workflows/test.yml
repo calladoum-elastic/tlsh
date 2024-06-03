@@ -8,17 +8,20 @@ on:
 
 jobs:
   native_tests:
-    name: ${{ matrix.os }} / Library
+    name: ${{ matrix.variants.os }} / ${{ matrix.variants.config }} / Library
     strategy:
       fail-fast: false
       matrix:
-        os: ["windows-latest", "ubuntu-latest", "macos-latest"]
-    runs-on: ${{ matrix.os }}
+        variants:
+          - {os: "windows-2022",  config: Debug}
+          - {os: "ubuntu-22.04",  config: Debug}
+          - {os: "macos-13",      config: Debug}
+    runs-on: ${{ matrix.variants.os }}
     steps:
     - uses: actions/checkout@v4
     - run: cmake -S. -B build -DTLSH_BUILD_WITH_ASAN=ON -DTLSH_BUILD_TESTS=ON -DTLSH_BUILD_BINDINGS=OFF
-    - run: cmake --build ./build
-    - run: ctest -j6 -C Debug -T test --output-on-failure --verbose
+    - run: cmake --build ./build --config ${{ matrix.variants.config }}
+    - run: ctest --progress --build-config ${{ matrix.variants.config }} --test-action test --test-dir ./build
 
   binding_tests:
     name: ${{ matrix.os }} / Python${{ matrix.py }}
