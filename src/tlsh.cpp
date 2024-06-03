@@ -153,7 +153,7 @@ Tlsh::getHashString(u8 showvers)
     // if the version number is illegal, just ignore
     if (showvers >= 10)
     {
-        return "";
+        throw std::runtime_error("invalid version");
     }
 
     if (this->m_stringHashes[showvers].empty())
