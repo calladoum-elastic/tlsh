@@ -64,6 +64,7 @@
 
 #include "stdio.h"
 #include "tlsh_impl.h"
+#include "tlsh_util.h"
 
 /////////////////////////////////////////////////////
 // C++ Implementation
@@ -140,19 +141,46 @@ Tlsh::final(u32 tlsh_option)
     m_Implementation->final(tlsh_option);
 }
 
-const std::vector<u8>
+std::vector<u8> const &
 Tlsh::getHashBytes(u8 showvers) const
 {
     return m_Implementation->hash(showvers);
 }
 
-const std::string
-Tlsh::getHashString(u8 showvers) const
+std::string const &
+Tlsh::getHashString(u8 showvers)
 {
-    auto const &res = this->getHashBytes(showvers);
-    return res.size() == 0 ? "" : std::string((char *)res.data(), res.size());
-}
+    // if the version number is illegal, just ignore
+    if (showvers >= 10)
+    {
+        return "";
+    }
 
+    if (this->m_stringHashes[showvers].empty())
+    {
+        this->m_stringHashes[showvers] = [this, showvers]()
+        {
+            auto const &res = this->getHashBytes(showvers);
+            auto hex        = std::vector<u8>(TLSH_STRING_LEN_REQ);
+
+            if (0 < showvers && showvers < 10)
+            {
+                hex[0] = 'T';
+                hex[1] = '0' + showvers;
+                to_hex(res.data(), res.size(), &hex[2]);
+            }
+            else
+            {
+                hex.resize(TLSH_STRING_LEN_REQ - 2);
+                to_hex(res.data(), res.size(), &hex[0]);
+            }
+
+            return res.size() == 0 ? "" : std::string((char *)hex.data(), hex.size());
+        }();
+    }
+
+    return this->m_stringHashes[showvers];
+}
 
 void
 Tlsh::reset()

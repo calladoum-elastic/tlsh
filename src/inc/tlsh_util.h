@@ -67,7 +67,7 @@ mod_diff(unsigned int x, unsigned int y, unsigned int R);
 int
 h_distance(int len, const unsigned char x[], const unsigned char y[]);
 void
-to_hex(u8 *psrc, int len, u8 *pdest);
+to_hex(const u8 *psrc, int len, u8 *pdest);
 // void
 // from_hex(const u8 *psrc, size_t srclen, u8 *pdest, size_t dstlen);
 unsigned char

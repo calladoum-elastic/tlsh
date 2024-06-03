@@ -992,69 +992,73 @@ TlshImpl::fromTlshBytes(std::vector<u8> const &buf)
 }
 
 
-std::vector<u8> const &
-TlshImpl::hash(std::vector<u8> &buffer, u8 showvers) const
+bool
+TlshImpl::generate_hash(u8 showvers) const
 {
-    const size_t bufSize = buffer.size();
-
-    // Insufficient buffer
-    if (bufSize != TLSH_STRING_LEN_REQ)
-    {
-        // strncpy(&buffer[0], "", bufSize);
-        buffer.clear();
-        buffer.resize(0);
-        return buffer;
-    }
-
     // Invalid state
     if (this->lsh_code_valid == false)
     {
         // strncpy(&buffer[0], "", bufSize);
-        buffer.clear();
-        buffer.resize(0);
-        return buffer;
+        // buffer.clear();
+        // buffer.resize(0);
+        return false;
     }
 
-    lsh_bin_struct tmp;
+    std::vector<u8> &buffer = this->lsh_code;
+    buffer.clear();
+    buffer.resize(TLSH_STRING_LEN_REQ / 2 - 1);
+
+    const size_t bufSize = buffer.size();
+
+    // Insufficient buffer
+    // if (bufSize != TLSH_STRING_LEN_REQ / 2)
+    // {
+    //     // strncpy(&buffer[0], "", bufSize);
+    //     // buffer.clear();
+    //     buffer.resize(0);
+    //     return buffer;
+    // }
+
+
+    lsh_bin_struct tmp{};
     for (int k = 0; k < TLSH_CHECKSUM_LEN; k++)
     {
         tmp.checksum[k] = swap_byte(this->lsh_bin.checksum[k]);
     }
     tmp.Lvalue = swap_byte(this->lsh_bin.Lvalue);
     tmp.Q.QB   = swap_byte(this->lsh_bin.Q.QB);
-    for (int i = 0; i < CODE_SIZE; i++)
+    for (size_t i = 0; i < CODE_SIZE; i++)
     {
         tmp.tmp_code[i] = (this->lsh_bin.tmp_code[CODE_SIZE - 1 - i]);
     }
 
-    if (0 < showvers && showvers < 10)
-    {
-        buffer[0] = 'T';
-        buffer[1] = '0' + showvers;
-        to_hex((unsigned char *)&tmp, sizeof(tmp), &buffer[2]);
-    }
-    else
-    {
-        buffer.resize(bufSize - 2);
-        to_hex((unsigned char *)&tmp, sizeof(tmp), &buffer[0]);
-    }
-    return buffer;
+    // if (0 < showvers && showvers < 10)
+    // {
+    //     buffer[0] = 'T';
+    //     buffer[1] = '0' + showvers;
+    //     ::memcpy(&buffer[2], &tmp, sizeof(tmp));
+    //     // to_hex((unsigned char *)&tmp, sizeof(tmp), &buffer[2]);
+    // }
+    // else
+    // {
+    // buffer.resize(bufSize - 2);
+    ::memcpy(&buffer[0], &tmp, sizeof(tmp));
+    // to_hex((unsigned char *)&tmp, sizeof(tmp), &buffer[0]);
+    // }
+
+    return true;
 }
 
 /* to get the hex-encoded hash code */
 std::vector<u8> const &
 TlshImpl::hash(u8 showvers) const
 {
-    if (!this->lsh_code.empty())
+    if (this->lsh_code.empty()) [[unlikely]]
     {
-        // lsh_code has been previously calculated, so just return it
-        return this->lsh_code;
+        this->generate_hash(showvers);
     }
 
-    this->lsh_code.resize(TLSH_STRING_LEN_REQ);
-    ::memset(this->lsh_code.data(), 0, TLSH_STRING_LEN_REQ);
-
-    return hash(this->lsh_code, showvers);
+    return this->lsh_code;
 }
 
 

@@ -52,10 +52,7 @@ public:
     std::vector<u8> const &
     hash(u8 showvers) const;
 
-    std::vector<u8> const &
-    hash(std::vector<u8> &,
-        u8 showvers) const; // saves allocating hash string in TLSH instance - bufSize should be
-                            // TLSH_STRING_LEN + 1
+
     int
     compare(const TlshImpl &other) const;
     int
@@ -85,6 +82,10 @@ public:
     }
 
 private:
+    bool
+    generate_hash(u8 showvers) const; // saves allocating hash string in TLSH instance - bufSize
+                                      // should be TLSH_STRING_LEN + 1
+
     std::unique_ptr<u32[]> a_bucket;
     std::array<u8, SLIDING_WND_SIZE> slide_window;
     unsigned int data_len;

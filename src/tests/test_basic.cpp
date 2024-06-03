@@ -97,10 +97,18 @@ TEST_CASE("Evaluation", "[" NS "]")
             REQUIRE_FALSE(t.isValid());
             std::vector<u8> inhex, outhex;
             from_hex(std::vector<u8>(instr.cbegin(), instr.cend()), inhex);
+            from_hex(std::vector<u8>(res.cbegin(), res.cend()), outhex);
             t.update(inhex);
             t.final();
             REQUIRE(t.isValid());
+
+            auto res_str = t.getHashString();
+            REQUIRE(res_str.size() == res.size());
             CHECK(t.getHashString() == res);
+
+            const auto &res_bytes = t.getHashBytes();
+            REQUIRE(res_bytes.size() == outhex.size());
+            CHECK(res_bytes == outhex);
         }
     }
 }

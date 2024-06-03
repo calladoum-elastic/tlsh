@@ -35,8 +35,9 @@ using UniqueHandle = GenericHandle<FILE, ::fclose>;
 
 using namespace std::literals::string_view_literals;
 
-const std::filesystem::path THIS_DIR{"."};
-const std::filesystem::path DATASET_ROOT       = THIS_DIR / "./tests/datasets";
+// const std::filesystem::path THIS_DIR{"."};
+const std::filesystem::path THIS_DIR{"../../../.."};
+const std::filesystem::path DATASET_ROOT       = THIS_DIR / "tests/datasets";
 const std::filesystem::path LARGE_DATASET_ROOT = DATASET_ROOT / "large";
 const std::filesystem::path SAMPLE_SMALL       = LARGE_DATASET_ROOT / "d3d12.dll";
 const std::filesystem::path SAMPLE_MEDIUM      = LARGE_DATASET_ROOT / "ntoskrnl.exe";
@@ -45,21 +46,24 @@ const std::filesystem::path SAMPLE_LARGE       = LARGE_DATASET_ROOT / "msedge.dl
 // Use
 TEST_CASE("Hash Perf - reuse", "[" NS "]")
 {
-    SECTION("Sanity")
-    {
-        BENCHMARK("Check")
-        {
-            ::sleep(1);
-        };
-    }
+    // SECTION("Sanity")
+    // {
+    //     BENCHMARK("Check")
+    //     {
+    //         ::sleep(1);
+    //     };
+    // }
 
     SECTION("TLSH tiny buffer hash (128B)")
     {
         let instr =
             "0684076d82f90066d54f1ccaa555f093a7627286555b0e5cc2e36da3ab41732e79636276530a861db7732eeb420bc2261af2a956f9bb2cf20876ca8819b4a43e"sv;
-        let res = "8EA0022016221F9C51EE2F20BDAE164C82075B9DD563196665C4652425557542459C81"sv;
+        std::vector<u8> inhex;
 
-        std::vector<u8> inhex, outhex;
+        let expected_hash_str =
+            "8EA0022016221F9C51EE2F20BDAE164C82075B9DD563196665C4652425557542459C81"sv;
+        std::vector<u8> expected_hash;
+
         from_hex(std::vector<u8>(instr.cbegin(), instr.cend()), inhex);
         auto t = Tlsh();
         BENCHMARK("TLSH (tiny buffer)")
@@ -69,8 +73,19 @@ TEST_CASE("Hash Perf - reuse", "[" NS "]")
             t.update(inhex);
             t.final();
             REQUIRE(t.isValid());
-            CHECK(t.getHashString() == res);
         };
+
+        // test result as bytes
+        from_hex(
+            std::vector<u8>(expected_hash_str.cbegin(), expected_hash_str.cend()), expected_hash);
+        auto const &res_bytes = t.getHashBytes(0);
+        REQUIRE(res_bytes.size() == expected_hash.size());
+        CHECK(res_bytes == expected_hash);
+
+        // test result as string
+        auto res_str = t.getHashString(0);
+        REQUIRE(res_str.size() == expected_hash_str.size());
+        CHECK(res_str == expected_hash_str);
     }
 
     SECTION("TLSH small buffer hash (100KB)")
@@ -78,10 +93,14 @@ TEST_CASE("Hash Perf - reuse", "[" NS "]")
         const auto sz = usize(158440);
         const auto fd = UniqueHandle{::fopen(SAMPLE_SMALL.c_str(), "r")};
         REQUIRE(fd != nullptr);
-        let res = "T1F3F36CAE32A810A5E57E917CC5C34609F7B27475571253DF02E0C2BE1E23BE86E39B91"sv;
 
-        std::vector<u8> in(sz);
-        const auto cnt = ::fread(in.data(), sizeof(u8), sz, fd.get());
+        std::vector<u8> inhex(sz);
+
+        let expected_hash_str =
+            "T1F3F36CAE32A810A5E57E917CC5C34609F7B27475571253DF02E0C2BE1E23BE86E39B91"sv;
+        std::vector<u8> expected_hash;
+
+        const auto cnt = ::fread(inhex.data(), sizeof(u8), sz, fd.get());
         REQUIRE(cnt == sz);
 
         auto t = Tlsh();
@@ -89,10 +108,22 @@ TEST_CASE("Hash Perf - reuse", "[" NS "]")
         {
             t.reset();
             REQUIRE_FALSE(t.isValid());
-            t.update(in);
+            t.update(inhex);
             t.final();
             REQUIRE(t.isValid());
         };
+
+        // test result as bytes (skipping version marker)
+        from_hex(std::vector<u8>(expected_hash_str.cbegin() + 2, expected_hash_str.cend()),
+            expected_hash);
+        auto const &res_bytes = t.getHashBytes(1);
+        REQUIRE(res_bytes.size() == expected_hash.size());
+        CHECK(res_bytes == expected_hash);
+
+        // test result as string
+        auto res_str = t.getHashString(1);
+        REQUIRE(res_str.size() == expected_hash_str.size());
+        CHECK(res_str == expected_hash_str);
     }
 
     SECTION("TLSH medium buffer hash (10MB)")
@@ -142,14 +173,6 @@ TEST_CASE("Hash Perf - reuse", "[" NS "]")
 
 TEST_CASE("Hash Perf - no reuse", "[" NS "]")
 {
-    SECTION("Sanity")
-    {
-        BENCHMARK("Check")
-        {
-            ::sleep(1);
-        };
-    }
-
     SECTION("TLSH tiny buffer hash (128B)")
     {
         let instr =
@@ -231,7 +254,6 @@ TEST_CASE("Hash Perf - no reuse", "[" NS "]")
         };
     }
 }
-
 
 TEST_CASE("Helpers", "[" NS "]")
 {

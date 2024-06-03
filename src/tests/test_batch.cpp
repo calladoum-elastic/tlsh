@@ -385,8 +385,15 @@ TEST_CASE("Batch", "[" NS "]")
             INFO("file is " << fpath.c_str());
             REQUIRE(t.isValid());
 
-            CHECK(t.getHashString(0) == expected_hash_str);
-            CHECK(t.getHashBytes() == expected_hash);
+            // test result as bytes
+            auto const &res_bytes = t.getHashBytes(0);
+            REQUIRE(res_bytes.size() == expected_hash.size());
+            CHECK(res_bytes == expected_hash);
+
+            // test result as string
+            auto res_str = t.getHashString(0);
+            REQUIRE(res_str.size() == expected_hash_str.size());
+            CHECK(res_str == expected_hash_str);
         }
     }
 }

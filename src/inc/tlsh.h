@@ -82,12 +82,12 @@ public:
     void
     final(u32 tlsh_option = 0);
 
-    const std::vector<u8>
+    std::vector<u8> const &
     getHashBytes(u8 showvers = 0) const;
 
     /* to get the hex-encoded hash code */
-    const std::string
-    getHashString(u8 showvers = 0) const;
+    std::string const &
+    getHashString(u8 showvers = 0);
 
     /* to get the hex-encoded hash code without allocating buffer in TlshImpl - bufSize should be
      * TLSH_STRING_BUFFER_LEN */
@@ -155,6 +155,7 @@ public:
 
 private:
     std::unique_ptr<TlshImpl> m_Implementation;
+    std::array<std::string, 10> m_stringHashes;
 };
 
 #ifdef TLSH_DISTANCE_PARAMETERS
