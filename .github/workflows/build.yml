@@ -160,3 +160,29 @@ jobs:
         name: tlsh-py-py${{ matrix.python-version }}-${{ matrix.variant.os }}.${{ matrix.variant.config }}-${{ matrix.variant.arch }}
         path: |
           wheel/
+
+  publish:
+    needs: bindings
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        variant:
+          # https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
+          - {os: macos-latest,   config: Release,        arch: x64}
+          - {os: ubuntu-latest,  config: RelWithDebInfo, arch: x64}
+          - {os: windows-latest, config: RelWithDebInfo, arch: x64}
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    name: PyPI upload of ${{ matrix.variant.os }}/${{ matrix.variant.config }}/py${{ matrix.python-version }}
+    steps:
+      - name: Download Wheel ${{ matrix.variant.os }}/${{ matrix.python-version }}/${{ matrix.variant.config }}
+        uses: actions/download-artifact@v4
+        id: download_wheels
+        with:
+          name: tlsh-py-py${{ matrix.python-version }}-${{ matrix.variant.os }}.${{ matrix.variant.config }}-${{ matrix.variant.arch }}
+          path: .
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Publish package
+        run: uv publish
